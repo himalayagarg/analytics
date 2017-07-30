@@ -1,0 +1,63 @@
+﻿* {
+    font-family: Calibri, Segoe UI Symbol;
+    font-size: 14px;
+}
+
+td, th {
+    display: table-cell;
+    padding-left: 2px;
+}
+
+th {
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+.right {
+    text-align: right;
+}
+
+.mylabel {
+    color: #282828;
+    font-weight: bold;
+}
+
+.status {
+    color: #D75600;
+    font-weight: bold;
+}
+
+.mypanel {
+    border: 1px solid #646464;
+    margin: 10px;
+    padding: 4px;
+    color: #000000;
+}
+
+.mygrid {
+    color: #000000;
+}
+
+.mygridheader {
+    background-color: #DCDCDC;
+    text-align: left;
+    height: 10px;
+    font-weight: bold;
+}
+
+.margin-bottom-10 {
+    margin-bottom: 10px;
+}
+
+.mytable {
+    width: 100%;
+    border: 1px solid #000000;
+    margin-bottom: 15px;
+}
+
+.mytableheader {
+    background-color: #c5c5c5;
+    text-align: left;
+    font-weight: bold;
+    font-size: 15px;
+}

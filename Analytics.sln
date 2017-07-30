@@ -7,20 +7,21 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "Analytics", "Analytics\", "
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv3.5"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_53031"
-		Debug.AspNetCompiler.PhysicalPath = "F:\@HimalayaGit\Analytics\Analytics\"
+		Debug.AspNetCompiler.PhysicalPath = "Analytics\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_53031\"
 		Debug.AspNetCompiler.Updateable = "true"
 		Debug.AspNetCompiler.ForceOverwrite = "true"
 		Debug.AspNetCompiler.FixedNames = "false"
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.VirtualPath = "/localhost_53031"
-		Release.AspNetCompiler.PhysicalPath = "F:\@HimalayaGit\Analytics\Analytics\"
+		Release.AspNetCompiler.PhysicalPath = "Analytics\"
 		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_53031\"
 		Release.AspNetCompiler.Updateable = "true"
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
 		VWDPort = "53031"
+		SlnRelativePath = "Analytics\"
 	EndProjectSection
 EndProject
 Global

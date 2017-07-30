@@ -36,9 +36,15 @@ public partial class UI_admin_mis_reqlife : System.Web.UI.Page
         {
             e.Row.CssClass = "row";
             string userid = Convert.ToString(Session["userid"]);
+
             Encryption64 e64 = new Encryption64();
+
             HyperLink hl_reqno = ((HyperLink)e.Row.Cells[1].FindControl("hl_reqno"));
             hl_reqno.NavigateUrl = "~/UI/admin/view_request.aspx?re=" + e64.Encrypt(hl_reqno.Text) + "&us=" + e64.Encrypt(userid);
+
+            ImageButton imgBtnPDF = ((ImageButton)e.Row.Cells[0].FindControl("imgBtn_PDF"));
+            imgBtnPDF.OnClientClick = "javascript:OpenPDFpopup('"+ e64.Encrypt(hl_reqno.Text) + "')";           
+
             e.Row.Cells[2].Text = projects.getProjectNameByProjectID(Convert.ToInt64(e.Row.Cells[2].Text));
             e.Row.Cells[4].Text = m_users.getFullnameByuserid(e.Row.Cells[4].Text);
             e.Row.Cells[5].Text = m_users.getFullnameByuserid(e.Row.Cells[5].Text);

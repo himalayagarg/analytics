@@ -1,24 +1,21 @@
 ﻿using System.Data;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.IO;
-using System.Text.RegularExpressions;
-using System.IO;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using iTextSharp.text.html;
-using iTextSharp.text.xml;
-using System.Xml;
-using iTextSharp.text.html.simpleparser;
+using iTextSharp.tool.xml;
+using System.Text;
 
 public partial class UI_users_print_request : System.Web.UI.Page
 {
-    string reqid;
+    string reqid = string.Empty;
+    string strPdfFileName = string.Empty;
+    bool isPDFrequest = false;
     ds_analytics.requestsRow req_row;
+    ds_analytics.projectsRow prj_row;
 
     protected override PageStatePersister PageStatePersister
     {
@@ -38,34 +35,45 @@ public partial class UI_users_print_request : System.Web.UI.Page
         if (req_dt.Count > 0)
         {
             req_row = req_dt[0];
+            prj_row = projects.getProjectByPrjid(req_row.projectid)[0];
+
+            this.Title = prj_row.projectname + "_" + req_row.reqdate.ToString("yyyy_MM") + "_" + reqid + ".pdf";
+
+            if (!string.IsNullOrEmpty(Request.QueryString.Get("action")) && (Request.QueryString.Get("action").ToLower() == "pdf"))
+            {
+                strPdfFileName = this.Title;
+                isPDFrequest = true;
+            }
         }
         else
         {
-            Response.Write("<script>alert('No request found .');</script>");
+            Response.Write("<script>alert('No request found.');</script>");
         }
 
         if (!IsPostBack)
         {
             bind_req_header();
             bind_req_samples();
+            if (req_row.statusid > 5)
+            {
+                pnl_LabResults.Visible = true;
+                bind_lab_results();
+            }
             bind_req_tests();
             bind_test_samples();
         }
 
-        else
+        if (!isPDFrequest)
         {
-
+            // Auto Pop-up for print request
+            Page.ClientScript.RegisterStartupScript(this.GetType(), "Print", "javascript:window.print();", true);
         }
-         
-        // Auto Print Pop-up
-        Page.ClientScript.RegisterStartupScript(this.GetType(), "Print", "javascript:window.print();", true);
     }
 
     private void bind_req_header()
-    {        
+    {
         //setting labels and InfoBox
         lbl_requestor.Text = "(Request by- " + m_users.getFullnameByuserid(req_row.reqfrom) + ")";
-        ds_analytics.projectsRow prj_row = projects.getProjectByPrjid(req_row.projectid)[0];
         lbl_project.Text = prj_row.projectname;
         lbl_prj_type.Text = prj_row.projecttype;
         lbl_prj_category.Text = prj_row.projectcategory;
@@ -76,7 +84,6 @@ public partial class UI_users_print_request : System.Web.UI.Page
         lbl_typerequest.Text = req_row.reqtype;
 
         lbl_status.Text = other.getStatustext(req_row.statusid);
-        tb_addinfo.Text = req_row.req_cmnt;
     }
 
     private void bind_req_samples()
@@ -94,11 +101,11 @@ public partial class UI_users_print_request : System.Web.UI.Page
         string gv_last = "GridView" + no_tabs.ToString();
 
         //loop through tabcontainer
-        int tab_no = 1;        
-        foreach (object obj in Panel2.Controls)
+        int tab_no = 1;
+        foreach (object obj in pnl_Samples.Controls)
         {
-            if ((obj is GridView) && (tab_no<=no_tabs))
-            {                
+            if ((obj is GridView) && (tab_no <= no_tabs))
+            {
                 {
                     GridView gv = ((GridView)(obj));
                     if ((gv.ID == gv_last) && (sample_inlastgrid != 0))
@@ -155,6 +162,33 @@ public partial class UI_users_print_request : System.Web.UI.Page
         return dt;
     }
 
+    private void bind_lab_results()
+    {
+        lbl_resultdate.Text = req_row.resultdate.ToString("dd/MM/yyyy");
+        lbl_remark_fromResult.Text = req_row.result_remark;
+
+        DataTable dt_result = labresult.getLabResult_ByJoining(req_row.reqid);
+
+        if (req_row.reqfrom == Convert.ToString(Session["userid"]) && (Request.UrlReferrer == null || !Request.UrlReferrer.ToString().ToLower().Contains("/ui/admin/")))
+        {
+            // For Requestor, show only results which are selected as 'Publish to Requestor'
+            DataRow[] d_row = dt_result.Select("isfor_report='True'");
+            DataTable dt = dt_result.Clone();
+            dt_result.Dispose();
+            foreach (DataRow dr in d_row)
+            {
+                dt.ImportRow(dr);
+            }
+            gv_view_result.DataSource = dt;
+        }
+        else
+        {
+            gv_view_result.DataSource = dt_result;
+        }
+
+        gv_view_result.DataBind();
+    }
+
     private void bind_req_tests()
     {
         ds_analytics.req_testsDataTable req_test_dt = req_tests.getTestsbyReqid(reqid);
@@ -185,7 +219,11 @@ public partial class UI_users_print_request : System.Web.UI.Page
             int i = 1;
             foreach (ds_analytics.test_samplesRow ts_row in ts_dt.Rows)
             {
-                dr_new[i.ToString()] = ts_row.isselected;
+                if (ts_row.isselected)
+                {
+                    //dr_new[i.ToString()] = isPDFrequest ? "True" : "\u2713";
+                    dr_new[i.ToString()] = "True";
+                }
                 i++;
             }
             dt_test_sample.Rows.Add(dr_new);
@@ -194,25 +232,52 @@ public partial class UI_users_print_request : System.Web.UI.Page
         //Databind
         gv_test_sample.DataSource = dt_test_sample;
         gv_test_sample.DataBind();
+
+        // Align in center
+        foreach (TableCell cell in gv_test_sample.HeaderRow.Cells)
+        {
+            if (gv_test_sample.HeaderRow.Cells.GetCellIndex(cell) > 0)
+            {
+                cell.Style.Add("text-align", "center");
+            }
+        }
+        foreach (GridViewRow gvr in gv_test_sample.Rows)
+        {
+            foreach (TableCell cell in gvr.Cells)
+            {
+                if (gvr.Cells.GetCellIndex(cell) > 0)
+                {
+                    cell.Style.Add("text-align", "center");
+                }
+            }
+        }
     }
 
     protected override void Render(HtmlTextWriter writer)
     {
-        if (!string.IsNullOrEmpty(Request.QueryString.Get("action"))&&(Request.QueryString.Get("action")=="pdf"))
+        if (isPDFrequest)
         {
-            MemoryStream mem = new MemoryStream();
-            StreamWriter twr = new StreamWriter(mem);
-            HtmlTextWriter myWriter = new HtmlTextWriter(twr);
-            base.Render(myWriter);
-            myWriter.Flush();
-            myWriter.Dispose();
-            StreamReader strmRdr = new StreamReader(mem);
-            strmRdr.BaseStream.Position = 0;
-            string pageContent = strmRdr.ReadToEnd();
-            strmRdr.Dispose();
-            mem.Dispose();
+            string pageContent;
+
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                StreamWriter streamWriter = new StreamWriter(memoryStream);
+                HtmlTextWriter htmlTextWriter = new HtmlTextWriter(streamWriter);
+
+                base.Render(htmlTextWriter); // renders all child controls of the page to htmlTextWriter
+                htmlTextWriter.Flush(); // htmlTextWriter clears buffer and write to MemoryStream
+                htmlTextWriter.Dispose();
+
+                using (StreamReader streamReader = new StreamReader(memoryStream))
+                {
+                    streamReader.BaseStream.Position = 0;
+                    pageContent = streamReader.ReadToEnd();
+                }
+            }
+
             writer.Write(pageContent);
-            CreatePDFDocument(pageContent);
+
+            CreatePdfAtServer(pageContent);
         }
         else
         {
@@ -220,29 +285,47 @@ public partial class UI_users_print_request : System.Web.UI.Page
         }
     }
 
-    public void CreatePDFDocument(string strHtml)
+    public void CreatePdfAtServer(string strHtml)
     {
-        string strFileName = HttpContext.Current.Server.MapPath("request.pdf");
-        // step 1: creation of a document-object
-        Document document = new Document();
-        // step 2:
-        // we create a writer that listens to the document
-        PdfWriter.GetInstance(document, new FileStream(strFileName, FileMode.Create));
-        StringReader se = new StringReader(strHtml);
-        HTMLWorker obj = new HTMLWorker(document);
-        document.Open();
-        obj.Parse(se);
-        document.Close();
-        ShowPdf(strFileName);
+        // Path of request.pdf at server i.e. ..UI\users\request.pdf
+        string strFilePath = HttpContext.Current.Server.MapPath("request.pdf");
+
+        // Read CSS file content
+        string cssFilePath = HttpContext.Current.Server.MapPath("~/Styles/Print.css");
+        string strCss = File.ReadAllText(cssFilePath);
+
+        // Step 1: Creating an instance of iTextSharp Document
+        using (Document document = new Document(PageSize.A4, 8, 8, 15, 8))
+        {
+            // Step 2: Create a writer that listens to the document
+            using (PdfWriter pdfWriter = PdfWriter.GetInstance(document, new FileStream(strFilePath, FileMode.Create)))  // Here existing pdf at strFilePath is replaced with new PDF of 0 KB size.
+            {
+                document.Open();
+
+                MemoryStream msHtml = new MemoryStream(Encoding.UTF8.GetBytes(strHtml));
+                MemoryStream msCss = new MemoryStream(Encoding.UTF8.GetBytes(strCss));
+
+                XMLWorkerHelper.GetInstance().ParseXHtml(pdfWriter, document, msHtml, msCss, Encoding.UTF8);
+
+
+                document.Close();   // Here new PDF file is released
+            }
+        }
+
+        RenderPdfToClient(strFilePath);
     }
 
-    public void ShowPdf(string strFileName)
+    public void RenderPdfToClient(string strFilePath)
     {
+        // Auto download PDF in chrome 
+        // chrome://settings/content/pdfDocuments
+
         Response.ClearContent();
         Response.ClearHeaders();
-        Response.AddHeader("Content-Disposition", "inline;filename=" + strFileName);
+
+        Response.AddHeader("Content-Disposition", "inline;filename=" + strPdfFileName);
         Response.ContentType = "application/pdf";
-        Response.WriteFile(strFileName);
+        Response.WriteFile(strFilePath);
         Response.Flush();
         Response.Clear();
     }
