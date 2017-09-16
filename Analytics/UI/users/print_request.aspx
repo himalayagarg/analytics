@@ -10,18 +10,21 @@
 </head>
 <body>
     <form id="form1" runat="server">
-
+        <div class="left">
+            <img src="../../image/logo1.jpg" alt="" />
+        </div>
         <table id="tbl_Request" class="mytable" cellpadding="1" cellspacing="0">
             <tbody>
                 <tr class="mytableheader">
                     <th>
-                        <asp:Label ID="lbl_requestor" runat="server" Font-Bold="true" />
+                        <span class="mytitle1">Analytics</span>
+                        <span class="mytitle2">Version 1.0</span>
                     </th>
                 </tr>
                 <tr>
                     <td>
                         <table style="width: 100%;" cellpadding="2">
-                            <tr>
+                            <tr>                                
                                 <td align="left">Project Name:
                             <br />
                                     <asp:Label ID="lbl_project" runat="server" CssClass="mylabel"></asp:Label>
@@ -60,7 +63,10 @@
                             <br />
                                     <asp:Label ID="lbl_typerequest" runat="server" CssClass="mylabel"></asp:Label>
                                 </td>
-                                <td align="left"></td>
+                                <td align="left">Request By:
+                                    <br />
+                                    <asp:Label ID="lbl_requestor" runat="server" CssClass="mylabel" />
+                                </td>
                             </tr>
                         </table>
                     </td>
@@ -161,7 +167,7 @@
                                     <asp:BoundField DataField="23" HeaderText="Sample23" />
                                     <asp:BoundField DataField="24" HeaderText="Sample24" />
                                 </Columns>
-                            </asp:GridView>                                                      
+                            </asp:GridView>
                         </asp:Panel>
                     </td>
                 </tr>

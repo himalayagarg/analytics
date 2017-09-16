@@ -73,7 +73,7 @@ public partial class UI_users_print_request : System.Web.UI.Page
     private void bind_req_header()
     {
         //setting labels and InfoBox
-        lbl_requestor.Text = "(Request by- " + m_users.getFullnameByuserid(req_row.reqfrom) + ")";
+        lbl_requestor.Text = m_users.getFullnameByuserid(req_row.reqfrom);
         lbl_project.Text = prj_row.projectname;
         lbl_prj_type.Text = prj_row.projecttype;
         lbl_prj_category.Text = prj_row.projectcategory;
@@ -301,6 +301,14 @@ public partial class UI_users_print_request : System.Web.UI.Page
             using (PdfWriter pdfWriter = PdfWriter.GetInstance(document, new FileStream(strFilePath, FileMode.Create)))  // Here existing pdf at strFilePath is replaced with new PDF of 0 KB size.
             {
                 document.Open();
+
+                string logoImagePath = HttpContext.Current.Server.MapPath("~/image/logo1.jpg");
+                iTextSharp.text.Image img = iTextSharp.text.Image.GetInstance(logoImagePath);
+                if (img != null)
+                {                    
+                    document.Add(img);
+                }
+
 
                 MemoryStream msHtml = new MemoryStream(Encoding.UTF8.GetBytes(strHtml));
                 MemoryStream msCss = new MemoryStream(Encoding.UTF8.GetBytes(strCss));

@@ -13,6 +13,10 @@ th {
     padding-bottom: 1px;
 }
 
+.left {
+    text-align: left;
+}
+
 .right {
     text-align: right;
 }
@@ -20,6 +24,21 @@ th {
 .mylabel {
     color: #282828;
     font-weight: bold;
+}
+
+.mytitle1 {
+    font-variant: small-caps;
+    margin: 0px;
+    padding: 0px 0px 0px 0px;
+    color: #282828;
+    font-size: 1.6em;
+}
+
+.mytitle2 {
+    font-weight: 400;
+    margin: 0px;
+    padding: 0px 0px 0px 10px;
+    color: #282828;
 }
 
 .status {
@@ -61,3 +80,7 @@ th {
     font-weight: bold;
     font-size: 15px;
 }
+
+    .mytableheader th {
+        text-align: left;
+    }
